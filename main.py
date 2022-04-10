@@ -32,6 +32,7 @@ def play(environment, agent, trials, maxSteps):
                 environment.__init__()
                 terminate = True
         episodeRewards.append(totalReward)
+        time.sleep(600)
     return episodeRewards
 
 if __name__ == "__main__":
