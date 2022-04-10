@@ -3,7 +3,8 @@ import numpy as np
 Gridworld class contains and structures our grid/environment our agent will be
 in with attributes such as what the starting location is, any blockades, the
 goal location, and our available actions the agent may take.
-Pass in our height and width to build grid if we 
+Pass in our height and width to build grid out the grid also confused on how 
+we determine our terminal state from the API
 """
 class GridWorld:
     def __init__(self,current_location,terminal_states):
