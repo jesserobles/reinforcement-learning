@@ -19,3 +19,12 @@ r = requests.post('http://localhost:8000/aip2pgaming/api/rl/gw.php', data=data)
 
 data = {'type': 'move', 'teamId': 1290, 'move': 'E', 'worldId': 0}
 r = requests.post('http://localhost:8000/aip2pgaming/api/rl/gw.php', data=data)
+
+
+# Enter a world
+data = {'type': 'enter', 'worldId': 1, 'teamId': 1290}
+r = requests.post('http://localhost:8000/aip2pgaming/api/rl/gw.php', data=data)
+
+# Make a move
+data = {'type': 'move', 'teamId': 1290, 'move': 'N', 'worldId': 1}
+r = requests.post('http://localhost:8000/aip2pgaming/api/rl/gw.php', data=data)
