@@ -20,8 +20,7 @@ models.Base.metadata.create_all(bind=engine)
 with open("worlds.json", "r") as file:
     payload = json.load(file)
 
-WORLDS = {int(ix): GridMDP(pl['cells'], terminals=pl['terminals']) for ix, pl in payload.items()}
-print(WORLDS.keys())
+WORLDS = {int(ix): GridMDP(pl['cells'], terminals=[tuple(t) for t in pl['terminals']]) for ix, pl in payload.items()}
 
 app = FastAPI()
 
