@@ -201,10 +201,10 @@ class GridMDP(MDP):
 
 
 
-# sequential_decision_environment = GridMDP([[-0.04, -0.04, -0.04, +1],
-#                                            [-0.04, None, -0.04, -1],
-#                                            [-0.04, -0.04, -0.04, -0.04]],
-#                                           terminals=[(3, 2), (3, 1)])
+sequential_decision_environment = GridMDP([[-0.04, -0.04, -0.04, +1],
+                                           [-0.04, None, -0.04, -1],
+                                           [-0.04, -0.04, -0.04, -0.04]],
+                                          terminals=[(3, 2), (3, 1)])
 
 # WORLDS = {
 #     0: GridMDP([[-0.04, -0.04, -0.04, +1],
