@@ -1,6 +1,8 @@
 # reinforcement-learning
 
 ## Run mock api
+Install the libraries in the requirements.txt file (you can use a virtual environment manager such as venv, pipenv, or conda).
+From the api directory, run the following.
 ```bash
 uvicorn main:app --reload
 ```
