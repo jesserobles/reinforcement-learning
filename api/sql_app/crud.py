@@ -89,8 +89,6 @@ def make_move(db: Session, teamId: int, gworldId: int, direction:str, move_tuple
     prv = ':'.join(str(i) for i in current_position)
     crnt = ':'.join(str(i) for i in next_position)
     db_team.current_location = crnt
-    print(next_position)
-    print(mdp.terminals)
     if next_position in mdp.terminals: # This should end the game
         db_run.complete = True
         db_team.current_location = None
