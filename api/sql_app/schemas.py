@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from pydantic import BaseModel
@@ -31,9 +32,12 @@ class Team(TeamBase):
         arbitrary_types_allowed = True
 
 class Run(BaseModel):
-    # id: int
+    runId: int = None
     gworldId: int
     team: Team
+    createTs: datetime.datetime
+    score: float
+    moves: int
 
     class Config:
         orm_mode = True
