@@ -1,3 +1,6 @@
+import random
+from typing import Tuple
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -33,9 +36,11 @@ def get_team(db: Session, team_id):
 def add_user_to_team(db: Session, team_id: int, user_id: int):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     team = db.query(models.Team).filter(models.Team.id == team_id).first()
-    user.teams.append(team)
+    team.users.append(user)
+    db.add(team)
     db.add(user)
     db.commit()
+    db.refresh(team)
     db.refresh(user)
     return {"user": user, "team": team}
 
@@ -63,3 +68,53 @@ def enter_world(db: Session, teamId: int, gworldId: int):
     db.commit()
     db.refresh(db_team)
 
+def make_move(db: Session, teamId: int, gworldId: int, direction:str, move_tuple: Tuple[int, int], mdp):
+    # Get team
+    db_team = get_team(db, teamId)
+    current_position = tuple([int(i) for i in db_team.current_location.split(':')])
+    next_position = take_single_action(mdp, current_position, move_tuple)
+    reward = mdp.R(next_position)
+    
+
+    # Get run
+    db_run = db.query(models.Run)\
+        .filter(
+            models.Run.gworldId == gworldId,
+            models.Run.teamId == teamId,
+            models.Run.complete == False)\
+        .order_by(models.Run.createTs.desc()).first()
+    if not db_run:
+        return
+    db_run.moves += 1
+    db_run.score += reward
+    
+    prv = ':'.join(str(i) for i in current_position)
+    crnt = ':'.join(str(i) for i in next_position)
+    db_team.current_location = crnt
+    if next_position in mdp.terminals: # This should end the game
+        db_run.complete = True
+        db_team.current_location = None
+        db_team.current_world = None
+    db.add(db_team)
+    db_move = models.Move(runId=db_run.runId, direction=direction, previous_location=prv, current_location=crnt, reward=reward)
+    db.add(db_run)
+    db.add(db_move)
+    db.commit()
+    db.refresh(db_run)
+    db.refresh(db_move)
+    db.refresh(db_team)
+    return {"move": db_move, "run": db_run}
+
+def take_single_action(mdp, s, a):
+    """
+    Select outcome of taking action a
+    in state s. Weighted Sampling.
+    """
+    x = random.uniform(0, 1)
+    cumulative_probability = 0.0
+    for probability_state in mdp.T(s, a):
+        probability, state = probability_state
+        cumulative_probability += probability
+        if x < cumulative_probability:
+            break
+    return state
