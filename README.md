@@ -2,6 +2,15 @@
 
 ## Run mock api
 Install the libraries in the requirements.txt file (you can use a virtual environment manager such as venv, pipenv, or conda).
+
+To create a virtual environment, you can run the following
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+This will create a folder named venv with the virtual environment files and install the dependencies.
+
 From the api directory, run the following.
 ```bash
 uvicorn main:app --reload
