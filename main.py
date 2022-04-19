@@ -40,4 +40,12 @@ if __name__ == "__main__":
     """Enter a world API call"""
     """grab the starting state from the return of the API call"""
     """Pass in the world and starting state into the play function"""
-    
+    from q_learning_agent import run_trial
+    count = 1000
+    rewards = []
+    for trial in range(count):
+        print(f"Running trial {trial + 1} of {count}")
+        rewards.append(run_trial(0))
+    rewards = [str(r) for r in rewards]
+    with open('rewards.txt', 'w') as file:
+        file.write("\n".join(rewards))
