@@ -41,6 +41,7 @@ if __name__ == "__main__":
     """grab the starting state from the return of the API call"""
     """Pass in the world and starting state into the play function"""
     from q_learning_agent import run_trial
-    for trial in range(100):
-        print(f"Running trial {trial + 1} of 100")
+    count = 1000
+    for trial in range(count):
+        print(f"Running trial {trial + 1} of {count}")
         run_trial(0)

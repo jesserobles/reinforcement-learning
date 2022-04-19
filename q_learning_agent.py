@@ -79,19 +79,19 @@ class QLearningAgent:
         return self.all_act
     
     def serialize_dict(self, payload:dict):
-        serialized = {}
-        for key, value in payload.items():
-            state, action = key
-            state = ','.join(str(s) for s in state)
-            action = ','.join(str(a) for a in action)
-            serialized[':'.join([state, action])] = value
+        serialized = {str(key): value for key, value in payload.items()}
+        # for key, value in payload.items():
+        #     state, action = key
+        #     state = ','.join(str(s) for s in state)
+        #     action = ','.join(str(a) for a in action)
+        #     serialized[':'.join([state, action])] = value
         return serialized
     
     def deserialize_dict(self, payload:dict):
-        deserialized = {}
-        for key, value in payload.items():
-            k = tuple(tuple([int(i) for i in ch.split(',')]) for ch in key.split(':'))
-            deserialized[k] = value
+        deserialized = {eval(key): value for key, value in payload.items()}
+        # for key, value in payload.items():
+        #     k = tuple(tuple([int(i) for i in ch.split(',')]) for ch in key.split(':'))
+        #     deserialized[k] = value
         return defaultdict(float, deserialized)
 
     @validate_response
@@ -168,6 +168,6 @@ def run_trial(world_id):
         percept = (current_state, current_reward)
         next_action = agent(percept)
         direction = MOVES[next_action]
-        sleep(5)
+        sleep(0.5)
     agent.save_q_values(world_id)
     
