@@ -16,6 +16,12 @@ From the api directory, run the following.
 uvicorn main:app --reload
 ```
 
+## Resetting the database
+To reset the database (delete all runs/moves/users/teams, adds default user and team), run the `reset_db.py` file in the api folder. Note that you need to run it in the same python environment as the api.
+```bash
+python reset_db.py
+```
+
 Sample responses
 
 Enter a world:

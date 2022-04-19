@@ -108,11 +108,15 @@ def take_single_action(mdp, s, a):
     Select outcome of taking action a
     in state s. Weighted Sampling.
     """
-    x = random.uniform(0, 1)
-    cumulative_probability = 0.0
-    for probability_state in mdp.T(s, a):
-        probability, state = probability_state
-        cumulative_probability += probability
-        if x < cumulative_probability:
-            break
+    # x = random.uniform(0, 1)
+    # cumulative_probability = 0.0
+    # for probability_state in mdp.T(s, a):
+    #     probability, state = probability_state
+    #     cumulative_probability += probability
+    #     if x < cumulative_probability:
+    #         break
+    transitions = mdp.T(s, a)
+    weights = [i[0] for i in transitions]
+    states = [i[-1] for i in transitions]
+    state = random.choices(states, weights=weights)[0]
     return state

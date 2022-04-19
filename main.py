@@ -40,4 +40,7 @@ if __name__ == "__main__":
     """Enter a world API call"""
     """grab the starting state from the return of the API call"""
     """Pass in the world and starting state into the play function"""
-    
+    from q_learning_agent import run_trial
+    for trial in range(100):
+        print(f"Running trial {trial + 1} of 100")
+        run_trial(0)
