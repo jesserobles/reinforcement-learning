@@ -44,6 +44,7 @@ class QLearningAgent:
         self.r = None
         self.team_id = team_id
         self.base_url = base_url
+        self.terminals = [None]
 
         if alpha:
             self.alpha = alpha
@@ -129,16 +130,34 @@ class QLearningAgent:
             json.dump(payload, file)
         
     def __call__(self, percept):
+        # s1, r1 = self.update_state(percept)
+        # Q, Nsa, s, a, r = self.Q, self.Nsa, self.s, self.a, self.r
+        # alpha, gamma = self.alpha, self.gamma#, self.terminals,
+        # actions_in_state = self.actions_in_state
+        # if s is not None:
+        #     Nsa[s, a] += 1
+        #     Q[s, a] += alpha(Nsa[s, a]) * (r + gamma * max(Q[s1, a1]
+        #                                                    for a1 in actions_in_state(s1)) - Q[s, a])
+        # self.s, self.r = s1, r1
+        # self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
+        # return self.a
         s1, r1 = self.update_state(percept)
         Q, Nsa, s, a, r = self.Q, self.Nsa, self.s, self.a, self.r
-        alpha, gamma = self.alpha, self.gamma#, self.terminals,
+        alpha, gamma, terminals = self.alpha, self.gamma, self.terminals,
         actions_in_state = self.actions_in_state
+
+        if s1 in terminals:
+            tmp = (s[0] + a[0], s[1] + a[1])
+            Q[tmp, None] = r1
         if s is not None:
             Nsa[s, a] += 1
             Q[s, a] += alpha(Nsa[s, a]) * (r + gamma * max(Q[s1, a1]
                                                            for a1 in actions_in_state(s1)) - Q[s, a])
-        self.s, self.r = s1, r1
-        self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
+        if s1 in terminals:
+            self.s = self.a = self.r = None
+        else:
+            self.s, self.r = s1, r1
+            self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
         return self.a
 
     def update_state(self, percept):
@@ -151,23 +170,38 @@ def run_trial(world_id):
     # Load any persisted Q-values
     agent.load_q_values(world_id)
     # Enter world
-    r = agent.enter_world(0) #{"code":"OK","worldId":0,"runId":6177,"state":"0:0"}
+    r = agent.enter_world(world_id) #{"code":"OK","worldId":0,"runId":6177,"state":"0:0"}
+    # current_state = tuple([int(s) for s in r.json()['state'].split(':')])
+    # percept = (current_state, 0)
+    # next_action = agent(percept)
+    # direction = MOVES[next_action]
+    # while True:
+    #     print(f"Current state: {current_state}, Moving: {direction}")
+    #     r = agent.move(direction, world_id)
+    #     current_state = r.json()['newState']
+    #     current_reward = r.json()['reward']
+    #     if current_state is None: # Game ended
+    #         print("Breaking")
+    #         break
+    #     current_state = (int(current_state['x']), int(current_state['y']))
+    #     percept = (current_state, current_reward)
+    #     next_action = agent(percept)
+    #     direction = MOVES[next_action]
+    #     sleep(0.5)
+    # agent.save_q_values(world_id)
     current_state = tuple([int(s) for s in r.json()['state'].split(':')])
-    percept = (current_state, 0)
-    next_action = agent(percept)
-    direction = MOVES[next_action]
     while True:
-        print(f"Current state: {current_state}, Moving: {direction}")
-        r = agent.move(direction, world_id)
-        current_state = r.json()['newState']
-        current_reward = r.json()['reward']
-        if current_state is None: # Game ended
-            print("Breaking")
-            break
-        current_state = (int(current_state['x']), int(current_state['y']))
+        current_reward = r.json().get("reward", 0)
         percept = (current_state, current_reward)
         next_action = agent(percept)
-        direction = MOVES[next_action]
-        sleep(0.5)
+        print(f"Current state: {current_state}, Moving: {MOVES.get(next_action)}")
+        if next_action is None:
+            print(f"Reward: {current_reward}")
+            break
+        r = agent.move(MOVES[next_action], world_id)
+        current_state = r.json().get("newState")
+        current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None
+        # current_state = take_single_action(mdp, current_state, next_action)
     agent.save_q_values(world_id)
+    return current_reward
     
