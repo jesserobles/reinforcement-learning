@@ -82,7 +82,7 @@ def gw_get(type:str, teamId:int, db: Session = Depends(get_db)):
 # Enter world and Make a move requests
 @app.post("/aip2pgaming/api/rl/gw.php")
 def gw_post(type:str = Form(...), worldId:int = Form(...), teamId:int = Form(...), move:str = Form(None), db: Session = Depends(get_db)):
-    if not (0 <= worldId <= 10):
+    if not worldId == 100 and (0 <= worldId <= 10):
         raise HTTPException(status_code=400, detail="Invalid world!")
     db_team = crud.get_team(db, team_id=teamId)
     if move and not move in ("N", "S", "E", "W"):
