@@ -159,7 +159,7 @@ class QLearningAgent:
 
 
 def run_trial(world_id):
-    agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, alpha=lambda n: 60./(59+n), x_range=(0,3), y_range=(0,2))#, base_url='https://www.notexponential.com/')
+    agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, alpha=lambda n: 60./(59+n), x_range=(0,39), y_range=(0,39), base_url='https://www.notexponential.com/')
     # Load any persisted Q-values
     agent.load_q_values(world_id)
     # Enter world
@@ -173,28 +173,9 @@ def run_trial(world_id):
         if next_action is None:
             print(f"Reward: {current_reward}")
             break
+        sleep(2)
         r = agent.move(MOVES[next_action], world_id)
         current_state = r.json().get("newState")
         current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None
     agent.save_q_values(world_id)
     return current_reward
-    
-"""
-The QLearningAgent:
-1. Load Q values for a given world.
-2. Enter the world. Get the current state (current_state).
-3. Loop:
-Select the best action (next_action) based on the Q-values.
-Take the action. This returns a reward and new state.
-Look at reward:
-    - Should update Q[(current_state, next_action)]
-    - To update Q values, we need:
-        - The initial state (s) and action (a). We'll get the Q value we are updating based on this
-        - The reward (R) we get from taking action a from the initial state (s) to the new state (s'): R(s, a, s')
-        - Gamma (we choose this)
-        - The max Q over actions from new the state (s')
-
-Look at the new state.
-    - If the new state is None the game ended, but we should update the Q value of the previous state and action.
-
-"""
