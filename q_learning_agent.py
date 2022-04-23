@@ -30,9 +30,11 @@ MOVES = {
 
 
 class QLearningAgent:
-    def __init__(self, all_act, gamma, Ne, Rplus, alpha=None, team_id=1290, base_url="http://127.0.0.1:8000/"):
+    def __init__(self, all_act, gamma, Ne, Rplus, alpha=None, team_id=1290, base_url="http://127.0.0.1:8000/", x_range=(0,39), y_range=(0,39)):
         with open("api_key.json", "r") as file:
             self.HEADERS = json.load(file)
+        self.x_min, self.x_max = x_range
+        self.y_min, self.y_max = y_range
         self.gamma = gamma
         self.all_act = all_act
         self.Ne = Ne  # iteration limit in exploration function
@@ -76,6 +78,18 @@ class QLearningAgent:
     def actions_in_state(self, state):
         """Return actions possible in given state.
         Useful for max and argmax."""
+        x, y = state
+        if x == self.x_min and y == self.y_min: # Origin, don't try SOUTH or WEST
+            return [NORTH, EAST]
+        if x == self.x_min: # Don't try WEST
+            return [NORTH, SOUTH, EAST]
+        if x == self.x_max: # Don't try EAST
+            return [NORTH, SOUTH, WEST]
+        if y == self.y_min: # Don't try SOUTH
+            return [NORTH, EAST, WEST]
+        if y == self.y_max: # Don't try NORTH
+            return [SOUTH, EAST, WEST]
+        # Otherwise, any direction is possible
         return self.all_act
     
     def serialize_dict(self, payload:dict):
@@ -142,20 +156,10 @@ class QLearningAgent:
         self.s, self.r = s1, r1
         self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
         return self.a
-    
-    def next_action(self, s, s_, a, r):
-        # Update N matrix, noting we've performed action a from state s
-        Nsa[s, a] += 1
-        # Update Q value
-        Q, Nsa, alpha, gamma, actions_in_state = self.Q, self.Nsa, self.alpha, self.gamma, self.actions_in_state
-        Q[s, a] += alpha(Nsa[s, a])*(r + gamma*max(Q[s_, a_] for a_ in actions_in_state(s_)) - Q[s, a])
-        
-
-
 
 
 def run_trial(world_id):
-    agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, alpha=lambda n: 60./(59+n))#, base_url='https://www.notexponential.com/')
+    agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, alpha=lambda n: 60./(59+n), x_range=(0,3), y_range=(0,2))#, base_url='https://www.notexponential.com/')
     # Load any persisted Q-values
     agent.load_q_values(world_id)
     # Enter world

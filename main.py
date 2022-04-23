@@ -44,10 +44,11 @@ if __name__ == "__main__":
     from q_learning_agent import run_trial
     count = 100
     rewards = []
+    win_loss = {1: "WINS", -1: "LOSSES"}
     for trial in range(count):
         print(f"Running trial {trial + 1} of {count}")
-        rewards.append(run_trial(0))
-    rewards = [str(r) for r in rewards]
-    with open('rewards.txt', 'w') as file:
-        file.write("\n".join(rewards))
-    print(Counter(rewards))
+        rewards.append(win_loss[run_trial(0)])
+    c = Counter(rewards)
+    c[-1]
+    c[1]
+    print(c)
