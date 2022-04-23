@@ -164,10 +164,8 @@ class QLearningAgent:
         return self.a
 
 
-def run_trial(world_id):
-    # agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, alpha=lambda n: 60./(59+n), x_range=(0,39), y_range=(0,39), base_url='https://www.notexponential.com/')
-    # alpha = lambda n: 1. / (1 + n)
-    agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, x_range=(0,3), y_range=(0,2))
+def run_trial(world_id, gamma=0.9, Ne=5, Rplus=2, x_range=(0,3), y_range=(0,2), base_url='http://127.0.0.1:8000/', slp=0):
+    agent = QLearningAgent(orientations, gamma=gamma, Ne=Ne, Rplus=Rplus, x_range=x_range, y_range=y_range, base_url=base_url)
     # Load any persisted Q-values
     agent.load_q_values(world_id)
     # Enter world
@@ -181,7 +179,7 @@ def run_trial(world_id):
         if next_action is None:
             print(f"Reward: {current_reward}")
             break
-        # sleep(2)
+        sleep(slp)
         r = agent.move(MOVES[next_action], world_id)
         current_state = r.json().get("newState")
         current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None

@@ -158,7 +158,7 @@ class GridMDP(MDP):
         self.grid = grid
         for x in range(self.cols):
             for y in range(self.rows):
-                if grid[y][x]:
+                if grid[y][x] is not None:
                     states.add((x, y))
                     reward[(x, y)] = grid[y][x]
         self.states = states
