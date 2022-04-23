@@ -145,8 +145,13 @@ class QLearningAgent:
             self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
         return self.a
     
-    def next_action(self, previous_state, new_state, reward, alpha, gamma):
-        Q, Nsa = self.Q, self.Nsa
+    def next_action(self, s, s_, a, r):
+        # Update N matrix, noting we've performed action a from state s
+        Nsa[s, a] += 1
+        # Update Q value
+        Q, Nsa, alpha, gamma, actions_in_state = self.Q, self.Nsa, self.alpha, self.gamma, self.actions_in_state
+        Q[s, a] += alpha(Nsa[s, a])*(r + gamma*max(Q[s_, a_] for a_ in actions_in_state(s_)) - Q[s, a])
+        
 
 
 
