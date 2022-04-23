@@ -78,18 +78,8 @@ class QLearningAgent:
     def actions_in_state(self, state):
         """Return actions possible in given state.
         Useful for max and argmax."""
-        x, y = state
-        if x == self.x_min and y == self.y_min: # Origin, don't try SOUTH or WEST
-            return [NORTH, EAST]
-        if x == self.x_min: # Don't try WEST
-            return [NORTH, SOUTH, EAST]
-        if x == self.x_max: # Don't try EAST
-            return [NORTH, SOUTH, WEST]
-        if y == self.y_min: # Don't try SOUTH
-            return [NORTH, EAST, WEST]
-        if y == self.y_max: # Don't try NORTH
-            return [SOUTH, EAST, WEST]
-        # Otherwise, any direction is possible
+        # To prevent trying all values including out of bounds, uncomment the line below
+        # return [action for action in self.all_act if self.legal_move(state, action)]
         return self.all_act
     
     def serialize_dict(self, payload:dict):
@@ -117,6 +107,16 @@ class QLearningAgent:
         r = requests.post(f'{self.base_url}aip2pgaming/api/rl/gw.php', data=data, headers=self.HEADERS)
 
         return r
+    
+    def legal_move(self, state, action):
+        x, y = state
+        dx, dy = action
+        x_, y_ = x + dx, y + dy
+        if x_ < self.x_min or x_ > self.x_max:
+            return False
+        if y_ < self.y_min or y_ > self.y_max:
+            return False
+        return True
 
     def load_q_values(self, world_id, folder="data"):
         file_location = os.path.join(folder, f"{world_id}.json")
@@ -146,20 +146,28 @@ class QLearningAgent:
         actions_in_state = self.actions_in_state
 
         if s1 in terminals:
-            Q[s, a] += alpha(Nsa[s, a]) * r1
+            # print(f"terminals: {terminals}")
+            # print("Terminal state")
+            Nsa[s, a] += 1
+            # print(f"Previous Q: {Q[s, a]}")
+            Q[s, a] = r1
+            # print(f"New Q: {Q[s, a]}")
             return None
-        else:
-            if s is not None:
-                Nsa[s, a] += 1
-                Q[s, a] += alpha(Nsa[s, a]) * (r + gamma * max(Q[s1, a1]
-                                                            for a1 in actions_in_state(s1)) - Q[s, a])
+        elif s is not None:
+            Nsa[s, a] += 1
+            # print(f"Previous Q: {Q[s, a]}")
+            Q[s, a] += alpha(Nsa[s, a]) * (r + gamma * max(Q[s1, a1]
+                                                        for a1 in actions_in_state(s1)) - Q[s, a])
+            # print(f"New Q: {Q[s, a]}")
         self.s, self.r = s1, r1
         self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
         return self.a
 
 
 def run_trial(world_id):
-    agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, alpha=lambda n: 60./(59+n), x_range=(0,3), y_range=(0,2))#, x_range=(0,39), y_range=(0,39), base_url='https://www.notexponential.com/')
+    # agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, alpha=lambda n: 60./(59+n), x_range=(0,39), y_range=(0,39), base_url='https://www.notexponential.com/')
+    # alpha = lambda n: 1. / (1 + n)
+    agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=2, x_range=(0,3), y_range=(0,2))
     # Load any persisted Q-values
     agent.load_q_values(world_id)
     # Enter world
