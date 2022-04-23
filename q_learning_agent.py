@@ -121,6 +121,11 @@ class QLearningAgent:
             json.dump(payload, file)
         
     def __call__(self, percept):
+        """
+        This method takes a percept, which is a tuple with two value. The first value is a tuple 
+        that represents the current state. The second value is the reward (float). This method 
+        updates the Q values, then returns the next action.
+        """
         s1, r1 = percept
         Q, Nsa, s, a, r = self.Q, self.Nsa, self.s, self.a, self.r
         alpha, gamma, terminals = self.alpha, self.gamma, self.terminals,
@@ -139,6 +144,11 @@ class QLearningAgent:
             self.s, self.r = s1, r1
             self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
         return self.a
+    
+    def next_action(self, previous_state, new_state, reward, alpha, gamma):
+        Q, Nsa = self.Q, self.Nsa
+
+
 
 
 def run_trial(world_id):
@@ -146,7 +156,7 @@ def run_trial(world_id):
     # Load any persisted Q-values
     agent.load_q_values(world_id)
     # Enter world
-    r = agent.enter_world(world_id) #{"code":"OK","worldId":0,"runId":6177,"state":"0:0"}
+    r = agent.enter_world(world_id) # {"code":"OK","worldId":0,"runId":6177,"state":"0:0"}
     current_state = tuple([int(s) for s in r.json()['state'].split(':')])
     while True:
         current_reward = r.json().get("reward", 0)
@@ -162,3 +172,22 @@ def run_trial(world_id):
     agent.save_q_values(world_id)
     return current_reward
     
+"""
+The QLearningAgent:
+1. Load Q values for a given world.
+2. Enter the world. Get the current state (current_state).
+3. Loop:
+Select the best action (next_action) based on the Q-values.
+Take the action. This returns a reward and new state.
+Look at reward:
+    - Should update Q[(current_state, next_action)]
+    - To update Q values, we need:
+        - The initial state (s) and action (a). We'll get the Q value we are updating based on this
+        - The reward (R) we get from taking action a from the initial state (s) to the new state (s'): R(s, a, s')
+        - Gamma (we choose this)
+        - The max Q over actions from new the state (s')
+
+Look at the new state.
+    - If the new state is None the game ended, but we should update the Q value of the previous state and action.
+
+"""
