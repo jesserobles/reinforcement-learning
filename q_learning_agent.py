@@ -132,17 +132,15 @@ class QLearningAgent:
         actions_in_state = self.actions_in_state
 
         if s1 in terminals:
-            tmp = (s[0] + a[0], s[1] + a[1])
-            Q[tmp, None] = r1
-        if s is not None:
-            Nsa[s, a] += 1
-            Q[s, a] += alpha(Nsa[s, a]) * (r + gamma * max(Q[s1, a1]
-                                                           for a1 in actions_in_state(s1)) - Q[s, a])
-        if s1 in terminals:
-            self.s = self.a = self.r = None
+            Q[s, a] += alpha(Nsa[s, a]) * r1
+            return None
         else:
-            self.s, self.r = s1, r1
-            self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
+            if s is not None:
+                Nsa[s, a] += 1
+                Q[s, a] += alpha(Nsa[s, a]) * (r + gamma * max(Q[s1, a1]
+                                                            for a1 in actions_in_state(s1)) - Q[s, a])
+        self.s, self.r = s1, r1
+        self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
         return self.a
     
     def next_action(self, s, s_, a, r):

@@ -40,6 +40,7 @@ if __name__ == "__main__":
     """Enter a world API call"""
     """grab the starting state from the return of the API call"""
     """Pass in the world and starting state into the play function"""
+    from collections import Counter
     from q_learning_agent import run_trial
     count = 100
     rewards = []
@@ -49,3 +50,4 @@ if __name__ == "__main__":
     rewards = [str(r) for r in rewards]
     with open('rewards.txt', 'w') as file:
         file.write("\n".join(rewards))
+    print(Counter(rewards))
