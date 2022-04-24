@@ -1,5 +1,44 @@
 # reinforcement-learning
 
+## Running against the real API
+You need to create an `api_key.json` file in this directory with the following format:
+```json
+{
+    "x-api-key": "XXXX",
+    "userId": "1103",
+    "User-Agent": "AI-Students"
+}
+```
+
+Then, you can run a single trial in python as follows:
+
+```python
+from q_learning_agent import run_trial
+world_id = 0
+base_url = 'https://www.notexponential.com/'
+trial = run_trial(world_id, gamma=0.9, Ne=5, Rplus=2, x_range=(0,39), y_range=(0,39), base_url=base_url, slp=1.5)
+```
+Note that the `slp` parameter determines how long the agent waits before submitting a move to the API. You can also run multiple trials at a time to collect more data:
+
+```python
+from collections import Counter
+from time import time
+from q_learning_agent import run_trial
+world_id = 0
+base_url = 'https://www.notexponential.com/'
+trials = []
+num_trials = 100
+start = time()
+for t in range(num_trials):
+    print(f"Running trial {t + 1} of {num_trials}")
+    trial = run_trial(world_id, gamma=0.9, Ne=2, Rplus=2, x_range=(0,39), y_range=(0,39), base_url=base_url, slp=1.5)
+    trials.append(trial)
+end = time()
+print(f"Elapsed: {end - start}")
+c = Counter(trials)
+print(c)
+```
+
 ## Run mock api
 Install the libraries in the requirements.txt file (you can use a virtual environment manager such as venv, pipenv, or conda).
 

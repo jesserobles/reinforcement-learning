@@ -9,10 +9,11 @@ Possible changes:
     class. (same for when we check the state if it is termianl)
     Dependent on what is given to us from the API
 """
-from collections import defaultdict
+from collections import Counter, defaultdict
 import json
 import os
 from pathlib import Path
+import random
 from time import sleep
 
 import numpy as np
@@ -39,6 +40,7 @@ class QLearningAgent:
         self.all_act = all_act
         self.Ne = Ne  # iteration limit in exploration function
         self.Rplus = Rplus  # large value to assign before iteration limit
+        self.R = defaultdict(set) # Keep track of rewards at each state
         self.Q = defaultdict(float)
         self.Nsa = defaultdict(float)
         self.s = None
@@ -83,11 +85,25 @@ class QLearningAgent:
         return self.all_act
     
     def serialize_dict(self, payload:dict):
-        serialized = {str(key): value for key, value in payload.items()}
+        serialized = {}
+        for key, value in payload.items():
+            if type(value) == set:
+                serialized[str(key)] = list(value)
+            else:
+                serialized[str(key)] = value
         return serialized
     
-    def deserialize_dict(self, payload:dict):
-        deserialized = {eval(key): value for key, value in payload.items()}
+    def deserialize_dict(self, payload:dict, simple=False):
+        deserialized = {}
+        multi = False
+        for key, value in payload.items():
+            if type(value) == list:
+                deserialized[eval(key)] = set(value)
+                multi = True
+            else:
+                deserialized[eval(key)] = value
+        if multi:
+            return defaultdict(set, deserialized)
         return defaultdict(float, deserialized)
 
     @validate_response
@@ -125,12 +141,15 @@ class QLearningAgent:
             payload = json.load(file)
         self.Q = self.deserialize_dict(payload['q'])
         self.Nsa = self.deserialize_dict(payload['n'])
+        if 'r' in payload:
+            self.R = self.deserialize_dict(payload['r'])
     
     def save_q_values(self, world_id, folder="data"):
         file_location = os.path.join(folder, f"{world_id}.json")
         q_payload = self.serialize_dict(self.Q)
         n_payload = self.serialize_dict(self.Nsa)
-        payload = {"q": q_payload, "n": n_payload}
+        r_payload = self.serialize_dict(self.R)
+        payload = {"q": q_payload, "n": n_payload, 'r': r_payload}
         with open(file_location, "w") as file:
             json.dump(payload, file)
         
@@ -141,30 +160,30 @@ class QLearningAgent:
         updates the Q values, then returns the next action.
         """
         s1, r1 = percept
+        self.R[s1].add(r1)
         Q, Nsa, s, a, r = self.Q, self.Nsa, self.s, self.a, self.r
         alpha, gamma, terminals = self.alpha, self.gamma, self.terminals,
         actions_in_state = self.actions_in_state
 
         if s1 in terminals:
-            # print(f"terminals: {terminals}")
-            # print("Terminal state")
             Nsa[s, a] += 1
-            # print(f"Previous Q: {Q[s, a]}")
-            Q[s, a] = r1
-            # print(f"New Q: {Q[s, a]}")
+            Q[s, a] += alpha(Nsa[s, a]) * r1
             return None
         elif s is not None:
             Nsa[s, a] += 1
-            # print(f"Previous Q: {Q[s, a]}")
             Q[s, a] += alpha(Nsa[s, a]) * (r + gamma * max(Q[s1, a1]
                                                         for a1 in actions_in_state(s1)) - Q[s, a])
-            # print(f"New Q: {Q[s, a]}")
+        self.previous_state = self.s
         self.s, self.r = s1, r1
+        # max_value = max(self.f(Q[s1, a1], Nsa[s1, a1]) for a1 in actions_in_state(s1))
+        # actions = [a1 for a1 in actions_in_state(s1) if self.f(Q[s1, a1], Nsa[s1, a1]) == max_value]
+        # action = random.choice([a for a in actions_in_state(s1) if Q[s1, a] == max_value])
         self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
+        # self.a = random.choice(actions)
         return self.a
 
 
-def run_trial(world_id, gamma=0.9, Ne=5, Rplus=2, x_range=(0,3), y_range=(0,2), base_url='http://127.0.0.1:8000/', slp=0):
+def run_trial(world_id, gamma=0.9, Ne=2, Rplus=2, x_range=(0,3), y_range=(0,2), base_url='http://127.0.0.1:8000/', slp=0):
     agent = QLearningAgent(orientations, gamma=gamma, Ne=Ne, Rplus=Rplus, x_range=x_range, y_range=y_range, base_url=base_url)
     # Load any persisted Q-values
     agent.load_q_values(world_id)
@@ -175,12 +194,15 @@ def run_trial(world_id, gamma=0.9, Ne=5, Rplus=2, x_range=(0,3), y_range=(0,2), 
         current_reward = r.json().get("reward", 0)
         percept = (current_state, current_reward)
         next_action = agent(percept)
-        print(f"Current state: {current_state}, Moving: {MOVES.get(next_action)}")
+        print(f"Current state: {current_state}, Reward: {current_reward}, Moving: {MOVES.get(next_action)}")
         if next_action is None:
             print(f"Reward: {current_reward}")
             break
         sleep(slp)
-        r = agent.move(MOVES[next_action], world_id)
+        try:
+            r = agent.move(MOVES[next_action], world_id)
+        except:
+            break # This will exit the while loop, and the statement after will save the q-values
         current_state = r.json().get("newState")
         current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None
     agent.save_q_values(world_id)

@@ -47,10 +47,17 @@ if __name__ == "__main__":
     win_loss = {1: "WINS", -1: "LOSSES"}
     for trial in range(count):
         print(f"Running trial {trial + 1} of {count}")
-        rewards.append(win_loss[run_trial(100)])
+        rewards.append(win_loss[run_trial(100, Ne=2)])
     c = Counter(rewards)
     if "LOSSES" not in c:
         c["LOSSES"] = 0
     if "WINS" not in c:
         c['WINS'] = 0
     print(c)
+"""
+#For the real API, run like this:
+from q_learning_agent import run_trial
+world_id = 0
+base_url = 'https://www.notexponential.com/'
+trial = run_trial(world_id, gamma=0.9, Ne=5, Rplus=2, x_range=(0,39), y_range=(0,39), base_url=base_url, slp=1.5)
+"""
