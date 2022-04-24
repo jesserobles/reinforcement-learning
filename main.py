@@ -47,7 +47,7 @@ if __name__ == "__main__":
     win_loss = {1: "WINS", -1: "LOSSES"}
     for trial in range(count):
         print(f"Running trial {trial + 1} of {count}")
-        rewards.append(win_loss[run_trial(100, Ne=2)])
+        rewards.append(win_loss[run_trial(100, Ne=5)])
     c = Counter(rewards)
     if "LOSSES" not in c:
         c["LOSSES"] = 0
