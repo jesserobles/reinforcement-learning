@@ -207,3 +207,25 @@ def run_trial(world_id, gamma=0.9, Ne=2, Rplus=2, x_range=(0,3), y_range=(0,2), 
         current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None
     agent.save_q_values(world_id)
     return current_reward
+
+def run_single_trial(agent, world_id, slp=0):
+    agent.load_q_values(world_id)
+    r = agent.enter_world(world_id) # {"code":"OK","worldId":0,"runId":6177,"state":"0:0"}
+    current_state = tuple([int(s) for s in r.json()['state'].split(':')])
+    while True:
+        current_reward = r.json().get("reward", 0)
+        percept = (current_state, current_reward)
+        next_action = agent(percept)
+        print(f"Current state: {current_state}, Reward: {current_reward}, Moving: {MOVES.get(next_action)}")
+        if next_action is None:
+            print(f"Reward: {current_reward}")
+            break
+        sleep(slp)
+        try:
+            r = agent.move(MOVES[next_action], world_id)
+        except:
+            break # This will exit the while loop, and the statement after will save the q-values
+        current_state = r.json().get("newState")
+        current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None
+    agent.save_q_values(world_id)
+    return current_reward

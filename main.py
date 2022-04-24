@@ -41,13 +41,20 @@ if __name__ == "__main__":
     """grab the starting state from the return of the API call"""
     """Pass in the world and starting state into the play function"""
     from collections import Counter
-    from q_learning_agent import run_trial
+    from q_learning_agent import orientations, run_trial, run_single_trial, QLearningAgent
+
+    agent = QLearningAgent(orientations, gamma=0.9, Ne=3, Rplus=2, x_range=(0,3), y_range=(0, 2), base_url='http://127.0.0.1:8000/')
+    score = run_single_trial(agent, 100)
+    print(score)
     count = 100
     rewards = []
     win_loss = {1: "WINS", -1: "LOSSES"}
     for trial in range(count):
         print(f"Running trial {trial + 1} of {count}")
-        rewards.append(win_loss[run_trial(100, Ne=5)])
+        try:
+            rewards.append(win_loss[run_single_trial(agent, 100)])
+        except:
+            agent.save_q_values(100)
     c = Counter(rewards)
     if "LOSSES" not in c:
         c["LOSSES"] = 0
