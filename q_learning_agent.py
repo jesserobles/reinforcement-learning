@@ -184,9 +184,18 @@ class QLearningAgent:
         # max_value = max(self.f(Q[s1, a1], Nsa[s1, a1]) for a1 in actions_in_state(s1))
         # actions = [a1 for a1 in actions_in_state(s1) if self.f(Q[s1, a1], Nsa[s1, a1]) == max_value]
         # action = random.choice([a for a in actions_in_state(s1) if Q[s1, a] == max_value])
-        self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
+        # self.a = max(actions_in_state(s1), key=lambda a1: self.f(Q[s1, a1], Nsa[s1, a1]))
+        self.a = self.action(s1)
         # self.a = random.choice(actions)
         return self.a
+    
+    def action(self, state):
+        available_actions = self.actions_in_state(state)
+        action_values = {a1: self.f(self.Q[state, a1], self.Nsa[state, a1]) for a1 in available_actions}
+        max_value = max(action_values.values())
+        available_actions = [k for k, v in action_values.items() if v == max_value]
+        return random.choice(available_actions)
+
 
 
 def run_trial(world_id, gamma=0.9, Ne=2, Rplus=2, x_range=(0,3), y_range=(0,2), base_url='http://127.0.0.1:8000/', slp=0):
