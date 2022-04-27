@@ -124,6 +124,12 @@ class QLearningAgent:
 
         return r
     
+    @validate_response
+    def get_location(self):
+        params = {'type': 'location', 'teamId': self.team_id}
+        r = requests.get(f'{self.base_url}aip2pgaming/api/rl/gw.php', params=params, headers=self.HEADERS)
+        return r
+    
     def legal_move(self, state, action):
         x, y = state
         dx, dy = action
@@ -229,3 +235,27 @@ def run_single_trial(agent, world_id, slp=0):
         current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None
     agent.save_q_values(world_id)
     return current_reward
+
+def resume_game(agent, world_id, slp=0):
+    agent.load_q_values(world_id)
+    params = {'type': 'location', 'teamId': 1290}
+    r = agent.get_location()
+    current_state = tuple([int(s) for s in r.json()['state'].split(':')])
+    while True:
+        current_reward = r.json().get("reward", 0)
+        percept = (current_state, current_reward)
+        next_action = agent(percept)
+        print(f"Current state: {current_state}, Reward: {current_reward}, Moving: {MOVES.get(next_action)}")
+        if next_action is None:
+            print(f"Reward: {current_reward}")
+            break
+        sleep(slp)
+        try:
+            r = agent.move(MOVES[next_action], world_id)
+        except:
+            break # This will exit the while loop, and the statement after will save the q-values
+        current_state = r.json().get("newState")
+        current_state = (int(current_state['x']), int(current_state['y'])) if current_state else None
+    agent.save_q_values(world_id)
+    return current_reward
+    
