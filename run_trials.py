@@ -3,13 +3,13 @@ from time import time
 from q_learning_agent import run_single_trial, orientations, QLearningAgent
 
 
-world_id = 1
+world_id = 9
 
 base_url = 'https://www.notexponential.com/'
-agent = QLearningAgent(orientations, gamma=0.9, Ne=2, Rplus=2, x_range=(0,39), y_range=(0,39), base_url=base_url)
+agent = QLearningAgent(orientations, gamma=0.9, Ne=2, Rplus=10, x_range=(0,39), y_range=(0,39), base_url=base_url)
 
 trials = []
-num_trials = 5
+num_trials = 1
 start = time()
 for t in range(num_trials):
     print(f"Running trial {t + 1} of {num_trials}")
