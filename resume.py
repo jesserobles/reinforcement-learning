@@ -4,7 +4,7 @@ import requests
 
 from q_learning_agent import resume_game, QLearningAgent, orientations
 
-world_id = 10
+world_id = 9
 
 base_url = 'https://www.notexponential.com/'
 agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=10, x_range=(0,39), y_range=(0,39), base_url=base_url)
