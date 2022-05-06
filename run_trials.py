@@ -9,7 +9,7 @@ base_url = 'https://www.notexponential.com/'
 agent = QLearningAgent(orientations, gamma=0.9, Ne=2, Rplus=10, x_range=(0,39), y_range=(0,39), base_url=base_url)
 
 trials = []
-num_trials = 1
+num_trials = 1000
 start = time()
 for t in range(num_trials):
     print(f"Running trial {t + 1} of {num_trials}")

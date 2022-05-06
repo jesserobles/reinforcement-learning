@@ -7,7 +7,7 @@ from q_learning_agent import resume_game, QLearningAgent, orientations
 world_id = 9
 
 base_url = 'https://www.notexponential.com/'
-agent = QLearningAgent(orientations, gamma=0.9, Ne=5, Rplus=10, x_range=(0,39), y_range=(0,39), base_url=base_url)
+agent = QLearningAgent(orientations, gamma=0.9, Ne=2, Rplus=10, x_range=(0,39), y_range=(0,39), base_url=base_url)
 
 try:
     reward = resume_game(agent, world_id=world_id, slp=1.5)
